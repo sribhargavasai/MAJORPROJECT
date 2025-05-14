@@ -1,9 +1,9 @@
 streamlit
-langchain
-google-generativeai
-langchain-google-genai
-duckduckgo-search
-faiss-cpu
-transformers
-torch
+langchain>=0.2
 langchain-community
+langchain-google-genai
+faiss-cpu
+huggingface-hub
+transformers
+google-api-python-client
+tqdm

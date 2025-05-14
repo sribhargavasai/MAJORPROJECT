@@ -1,12 +1,14 @@
 import streamlit as st
 from langchain.agents import initialize_agent, Tool, AgentType
-from langchain.vectorstores import FAISS
-from langchain.embeddings import HuggingFaceEmbeddings
+from langchain_community.vectorstores import FAISS
+from langchain_community.embeddings import HuggingFaceEmbeddings
+from langchain_community.document_loaders import WebBaseLoader
+
 from langchain_google_genai import ChatGoogleGenerativeAI
 import os
 import re
 from langchain.document_loaders import WebBaseLoader
-from langchain_community.document_loaders import WebBaseLoader
+
 
 
 # Initialize Gemini (Urban Transportation LLM)

@@ -1,5 +1,5 @@
 streamlit
-langchain==0.0.208
+langchain
 google-generativeai
 langchain-google-genai
 duckduckgo-search

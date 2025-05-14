@@ -6,6 +6,8 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 import os
 import re
 from langchain.document_loaders import WebBaseLoader
+from langchain_community.document_loaders import WebBaseLoader
+
 
 # Initialize Gemini (Urban Transportation LLM)
 os.environ["GOOGLE_API_KEY"] = "AIzaSyAckx-U3feW4dDEUGaWDDmKleATiPpJHqA"

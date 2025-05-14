@@ -6,3 +6,4 @@ duckduckgo-search
 faiss-cpu
 transformers
 torch
+langchain-community

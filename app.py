@@ -30,7 +30,6 @@ external_agent = initialize_agent(
     tools=resource_tools,
     llm=llm,
     agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION,
-    verbose=False
 )
 
 # ---------------- Vector Store (RAG) ----------------
@@ -73,7 +72,7 @@ def main_agent(query, vectordb):
         return solution_agent(query)
 
     elif any(term in query.lower() for term in ["traffic", "bus", "metro", "train"]):
-        return external_agent.run(query)
+        return external_agent.invoke(query)
 
     else:
         return "We couldn't find relevant information in our knowledge base. This might be:\n- Too specific or out of domain\n- Not covered in our 20+ urban documents\n\nTry rephrasing or contact a local expert."

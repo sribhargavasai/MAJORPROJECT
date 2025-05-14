@@ -1,9 +1,10 @@
 streamlit
-langchain>=0.2
-langchain-community
-langchain-google-genai
-faiss-cpu
-huggingface-hub
-transformers
+langchain
+langchain_community
+langchain_google_genai
 google-api-python-client
-tqdm
+faiss-cpu
+transformers
+huggingface-hub
+beautifulsoup4
+requests

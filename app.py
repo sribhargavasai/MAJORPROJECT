@@ -3,19 +3,18 @@ from langchain.agents import initialize_agent, Tool, AgentType
 from langchain_community.vectorstores import FAISS
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_community.document_loaders import WebBaseLoader
-
 from langchain_google_genai import ChatGoogleGenerativeAI
 import os
 import re
-from langchain.document_loaders import WebBaseLoader
 
-
-
-# Initialize Gemini (Urban Transportation LLM)
+# ---------------- Setup ----------------
 os.environ["GOOGLE_API_KEY"] = "AIzaSyAckx-U3feW4dDEUGaWDDmKleATiPpJHqA"
+os.environ["USER_AGENT"] = "UrbanTransportRAGBot/1.0"
+
+# Initialize Gemini LLM
 llm = ChatGoogleGenerativeAI(model="gemini-1.5-flash", temperature=0.7)
 
-# ---------------- Resource Agent (External Tools / APIs) ----------------
+# ---------------- Resource Agent ----------------
 def get_real_time_traffic(city):
     return f"Traffic in {city} is currently moderate with delays on major routes."
 
@@ -43,7 +42,7 @@ def load_vectordb():
 # ---------------- Research Agent ----------------
 def research_agent(query, vectordb, threshold=0.7):
     docs_scores = vectordb.similarity_search_with_score(query)
-    relevant_docs = [doc for doc, score in docs_scores if score <= threshold] 
+    relevant_docs = [doc for doc, score in docs_scores if score <= threshold]
     if not relevant_docs:
         return None, 0
     return "\n".join([doc.page_content for doc in relevant_docs]), 1
@@ -63,7 +62,6 @@ def solution_agent(query):
 # ---------------- Main Agent ----------------
 def main_agent(query, vectordb):
     blocked = ["politics", "religion", "relationships", "opinion", "news"]
-
     if any(x in query.lower() for x in blocked):
         return "Sorry, that topic is restricted."
 
@@ -126,7 +124,6 @@ if user_input:
         else:
             simplified_response = analyst_agent(response)
             st.markdown(f"**Response:**\n{simplified_response}")
-
 
 # ---------------- Business Value ----------------
 st.sidebar.header("Business Value")

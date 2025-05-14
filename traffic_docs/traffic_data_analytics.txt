@@ -1,0 +1,1 @@
+Traffic data from sensors and cameras is analyzed to optimize traffic light patterns and reduce congestion.

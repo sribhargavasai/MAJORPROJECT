@@ -9,7 +9,7 @@ import re
 
 # ---------------- Setup ----------------
 os.environ["GOOGLE_API_KEY"] = "AIzaSyAckx-U3feW4dDEUGaWDDmKleATiPpJHqA"
-os.environ["USER_AGENT"] = "UrbanTransportRAGBot/1.0"
+
 
 # Initialize Gemini LLM
 llm = ChatGoogleGenerativeAI(model="gemini-1.5-flash", temperature=0.7)

@@ -3,11 +3,13 @@ import re
 import streamlit as st
 import requests
 from bs4 import BeautifulSoup
+from PyPDF2 import PdfReader
 
-from langchain.agents import initialize_agent, Tool, AgentType
-from langchain_community.vectorstores import FAISS
-from langchain_community.embeddings import HuggingFaceEmbeddings
+from langchain.vectorstores import FAISS
+from langchain.embeddings import HuggingFaceEmbeddings
+from langchain.docstore.document import Document
 from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain.agents import initialize_agent, Tool, AgentType
 
 # ------------------- Environment -------------------
 os.environ["GOOGLE_API_KEY"] = "AIzaSyAckx-U3feW4dDEUGaWDDmKleATiPpJHqA"
@@ -37,9 +39,27 @@ external_agent = initialize_agent(
 
 # ------------------- Vector Store -------------------
 @st.cache_resource
-def load_vectordb():
-    embedding = HuggingFaceEmbeddings()
-    return FAISS.load_local("urban_transport_faiss_index", embedding, allow_dangerous_deserialization=True)
+def get_embedding():
+    return HuggingFaceEmbeddings()
+
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+
+def create_vectorstore_from_pdfs(uploaded_files):
+    docs = []
+    for file in uploaded_files:
+        reader = PdfReader(file)
+        text = ""
+        for page in reader.pages:
+            text += page.extract_text() or ""
+        docs.append(Document(page_content=text))
+    
+    # ✅ Split into chunks
+    splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=100)
+    split_docs = splitter.split_documents(docs)
+    
+    vectordb = FAISS.from_documents(split_docs, get_embedding())
+    return vectordb
+
 
 # ------------------- Agents -------------------
 def research_agent(query, vectordb, threshold=0.7):
@@ -61,7 +81,6 @@ def solution_agent(query):
 
 def main_agent(query, vectordb):
     blocked = ["politics", "religion", "relationships", "opinion", "news"]
-
     if any(x in query.lower() for x in blocked):
         return "Sorry, that topic is restricted."
 
@@ -76,18 +95,16 @@ def main_agent(query, vectordb):
         return external_agent.run(query)
 
     else:
-        return "We couldn't find relevant information in our knowledge base. This might be:\n- Too specific or out of domain\n- Not covered in our 20+ urban documents\n\nTry rephrasing or contact a local expert."
+        return "We couldn't find relevant information in your uploaded documents. Try rephrasing your query or upload more relevant PDFs."
 
-# ------------------- Traditional URL Paragraph Extractor -------------------
+# ------------------- URL Paragraph Extractor -------------------
 def load_from_url(url):
     try:
         headers = {"User-Agent": os.getenv("USER_AGENT", "UrbanTransportRAGBot/1.0")}
         response = requests.get(url, headers=headers, timeout=10)
         response.raise_for_status()
-
         soup = BeautifulSoup(response.text, "html.parser")
         paragraphs = soup.find_all("p")
-
         for para in paragraphs:
             text = para.get_text(strip=True)
             if text:
@@ -112,21 +129,28 @@ with st.expander("🔗 View External Web Content (Experimental)"):
         else:
             st.error("Failed to load paragraph.")
 
+# Upload PDF files
+st.subheader("📄 Upload Urban Transport PDFs")
+uploaded_files = st.file_uploader("Upload PDF files for urban transport knowledge", type="pdf", accept_multiple_files=True)
+
+if uploaded_files:
+    vectordb = create_vectorstore_from_pdfs(uploaded_files)
+    st.success("PDFs processed and vector database created!")
+else:
+    st.warning("Please upload at least one PDF to use the assistant.")
+    vectordb = None
+
 # Ask the bot
 user_input = st.text_input("Ask your urban transportation-related question")
 
-if user_input:
-    vectordb = load_vectordb()
+if user_input and vectordb:
     response = main_agent(user_input, vectordb)
 
     # Goodbye detection
     if re.search(r"\b(bye|later|talk to you|take care|goodnight|farewell|see you)\b", user_input.lower()):
         closing_responses = [
-            "Safe travels!",
-            "Catch you later!",
-            "Drive safe!",
-            "Until next time!",
-            "Happy commuting!"
+            "Safe travels!", "Catch you later!", "Drive safe!",
+            "Until next time!", "Happy commuting!"
         ]
         st.success(closing_responses[hash(user_input) % len(closing_responses)])
     else:
@@ -135,6 +159,8 @@ if user_input:
         else:
             simplified_response = analyst_agent(response)
             st.markdown(f"**Response:**\n{simplified_response}")
+elif user_input:
+    st.error("Please upload at least one PDF before asking.")
 
 # Sidebar info
 st.sidebar.header("Business Value")
@@ -142,8 +168,8 @@ st.sidebar.info("""
 This Urban Transportation AI Agentic RAG system helps:
 - Citizens plan smarter routes avoiding traffic.
 - City officials assess public transport efficiency.
-- Planners analyze mobility trends from 20+ urban documents.
-- Enables smart fallback answers for unindexed queries.
+- Planners analyze mobility trends from uploaded documents.
+- Enables fallback answers for unindexed queries.
 - Blocks irrelevant and sensitive topics.
 
 Powered by RAG + Tools + Agents

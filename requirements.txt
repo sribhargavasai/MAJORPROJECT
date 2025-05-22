@@ -7,4 +7,4 @@ langchain
 faiss-cpu
 langchain-google-genai
 sentence-transformers
-U langchain-community
+langchain-community

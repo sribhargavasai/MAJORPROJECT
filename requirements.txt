@@ -1,12 +1,9 @@
+# requirements.txt
 streamlit
-langchain
-langchain_community
-langchain_google_genai
-google-api-python-client
-faiss-cpu
-transformers
-huggingface-hub
+PyMuPDF
 beautifulsoup4
 requests
+langchain
+faiss-cpu
+langchain-google-genai
 sentence-transformers
-PyPDF2
